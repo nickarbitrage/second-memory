@@ -28,11 +28,15 @@ class MeetingService:
     async def upload_meeting(
         self, file: UploadFile, background_tasks: BackgroundTasks
     ) -> MeetingResponse:
+        from pathlib import Path
+
         try:
             validate_audio_file(file)
         except Exception as e:
             logger.error(f"Upload validate failed: {e}")
             raise
+
+        is_txt = Path(file.filename).suffix.lower() == ".txt" if file.filename else False
 
         try:
             file_path = await save_upload(file, settings.upload_dir)
@@ -42,9 +46,14 @@ class MeetingService:
 
         meeting = Meeting(
             user_id=self.user_id,
-            audio_url=file_path,
             title=f"Meeting from {datetime.now(timezone.utc).strftime('%b %d, %Y')}",
         )
+
+        if is_txt:
+            content = await file.read()
+            transcript = content.decode("utf-8")
+            meeting.transcript = transcript
+
         try:
             self.db.add(meeting)
             await self.db.commit()
@@ -54,10 +63,14 @@ class MeetingService:
             raise
 
         meeting_id = meeting.id
-        background_tasks.add_task(self.process_meeting, meeting_id)
 
-        from sqlalchemy.orm import selectinload
+        if is_txt:
+            background_tasks.add_task(self._process_text_meeting, meeting_id)
+        else:
+            background_tasks.add_task(self.process_meeting, meeting_id)
+
         from sqlalchemy import select
+        from sqlalchemy.orm import selectinload
         result = await self.db.execute(
             select(Meeting)
             .options(selectinload(Meeting.tasks))
@@ -123,6 +136,54 @@ class MeetingService:
             if meeting and meeting.audio_url and os.path.exists(meeting.audio_url):
                 try:
                     os.remove(meeting.audio_url)
+                except Exception:
+                    pass
+
+    async def _process_text_meeting(self, meeting_id: UUID) -> None:
+        async with async_session() as db:
+            try:
+                result = await db.execute(
+                    select(Meeting).options(selectinload(Meeting.tasks)).where(Meeting.id == meeting_id)
+                )
+                meeting = result.scalar_one_or_none()
+                if not meeting or not meeting.transcript:
+                    logger.warning(f"Text meeting {meeting_id} has no transcript")
+                    return
+
+                logger.info(f"Processing text meeting {meeting_id}")
+                ai = AIService()
+                analysis = await ai.analyze_transcript(meeting.transcript)
+
+                meeting.summary = analysis.get("summary", "")
+                meeting.title = analysis.get("title", meeting.title)
+                meeting.category = analysis.get("category", MeetingCategory.GENERAL.value)
+                meeting.speakers = analysis.get("speakers", [])
+                meeting.key_decisions = analysis.get("key_decisions", [])
+                meeting.action_items = analysis.get("action_items", [])
+                meeting.insights = analysis.get("insights", [])
+                meeting.sentiment = analysis.get("sentiment", {})
+                meeting.next_steps = analysis.get("next_steps", [])
+                meeting.is_processed = True
+
+                tasks_data = analysis.get("tasks", [])
+                for task_data in tasks_data:
+                    task = Task(
+                        meeting_id=meeting.id,
+                        title=task_data.get("title", "Untitled task"),
+                        assigned_to=task_data.get("assigned_to", ""),
+                    )
+                    db.add(task)
+
+                await db.commit()
+                logger.info(f"Text meeting {meeting_id} processed successfully")
+            except Exception as e:
+                logger.error(f"Failed to process text meeting {meeting_id}: {e}")
+                await db.rollback()
+                try:
+                    m = await db.get(Meeting, meeting_id)
+                    if m and not m.is_processed:
+                        m.is_processed = True
+                        await db.commit()
                 except Exception:
                     pass
 

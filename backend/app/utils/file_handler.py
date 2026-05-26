@@ -3,7 +3,7 @@ import uuid
 from pathlib import Path
 from fastapi import UploadFile, HTTPException
 
-ALLOWED_EXTENSIONS = {".mp3", ".wav", ".mp4", ".m4a", ".ogg", ".webm"}
+ALLOWED_EXTENSIONS = {".mp3", ".wav", ".mp4", ".m4a", ".ogg", ".webm", ".txt"}
 MAX_SIZE_MB = 50
 
 
