@@ -28,22 +28,39 @@ class MeetingService:
     async def upload_meeting(
         self, file: UploadFile, background_tasks: BackgroundTasks
     ) -> MeetingResponse:
-        validate_audio_file(file)
-        file_path = await save_upload(file, settings.upload_dir)
+        try:
+            validate_audio_file(file)
+        except Exception as e:
+            logger.error(f"Upload validate failed: {e}")
+            raise
+
+        try:
+            file_path = await save_upload(file, settings.upload_dir)
+        except Exception as e:
+            logger.error(f"Upload save failed: {e}")
+            raise
 
         meeting = Meeting(
             user_id=self.user_id,
             audio_url=file_path,
             title=f"Meeting from {datetime.now(timezone.utc).strftime('%b %d, %Y')}",
         )
-        self.db.add(meeting)
-        await self.db.commit()
-        await self.db.refresh(meeting)
+        try:
+            self.db.add(meeting)
+            await self.db.commit()
+            await self.db.refresh(meeting)
+        except Exception as e:
+            logger.error(f"Upload db failed: {e}")
+            raise
 
         meeting_id = meeting.id
         background_tasks.add_task(self.process_meeting, meeting_id)
 
-        return MeetingResponse.model_validate(meeting)
+        try:
+            return MeetingResponse.model_validate(meeting)
+        except Exception as e:
+            logger.error(f"Upload response validation failed: {e}")
+            raise
 
     async def process_meeting(self, meeting_id: UUID) -> None:
         async with async_session() as db:
