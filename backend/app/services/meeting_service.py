@@ -47,6 +47,7 @@ class MeetingService:
 
     async def process_meeting(self, meeting_id: UUID) -> None:
         async with async_session() as db:
+            meeting = None
             try:
                 result = await db.execute(
                     select(Meeting).where(Meeting.id == meeting_id)
@@ -87,6 +88,22 @@ class MeetingService:
             except Exception as e:
                 logger.error(f"Failed to process meeting {meeting_id}: {e}")
                 await db.rollback()
+                if meeting:
+                    try:
+                        async with async_session() as retry_db:
+                            m = await retry_db.get(Meeting, meeting_id)
+                            if m and not m.is_processed:
+                                m.is_processed = True
+                                await retry_db.commit()
+                                logger.info(f"Meeting {meeting_id} marked as processed (fallback)")
+                    except Exception as e2:
+                        logger.error(f"Failed to mark meeting {meeting_id} as processed: {e2}")
+
+            if meeting and meeting.audio_url and os.path.exists(meeting.audio_url):
+                try:
+                    os.remove(meeting.audio_url)
+                except Exception:
+                    pass
 
     async def get_meetings(
         self, limit: int = 20, offset: int = 0
