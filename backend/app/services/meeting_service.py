@@ -56,12 +56,15 @@ class MeetingService:
         meeting_id = meeting.id
         background_tasks.add_task(self.process_meeting, meeting_id)
 
-        meeting.tasks = []
-        try:
-            return MeetingResponse.model_validate(meeting)
-        except Exception as e:
-            logger.error(f"Upload response validation failed: {e}")
-            raise
+        from sqlalchemy.orm import selectinload
+        from sqlalchemy import select
+        result = await self.db.execute(
+            select(Meeting)
+            .options(selectinload(Meeting.tasks))
+            .where(Meeting.id == meeting_id)
+        )
+        loaded = result.scalar_one()
+        return MeetingResponse.model_validate(loaded)
 
     async def process_meeting(self, meeting_id: UUID) -> None:
         async with async_session() as db:
