@@ -1,0 +1,352 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+@layer base {
+  * {
+    @apply border-surface-800;
+  }
+
+  body {
+    @apply bg-[#08080d] text-surface-200 antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+
+  ::selection {
+    @apply bg-primary-500/30 text-white;
+  }
+
+  ::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-700 rounded-full hover:bg-surface-600;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-surface-950/75 backdrop-blur-xl border border-surface-800/60;
+    box-shadow:
+      0 4px 32px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .glass-hover {
+    @apply hover:bg-surface-900/80 transition-colors duration-200;
+  }
+
+  .card {
+    @apply glass rounded-xl p-5;
+  }
+
+  .card-hover {
+    @apply card glass-hover hover:border-surface-700/50 transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-lg
+           bg-primary-600 text-white font-medium text-sm
+           hover:bg-primary-500 active:bg-primary-700
+           transition-all duration-150
+           disabled:opacity-50 disabled:cursor-not-allowed
+           focus:outline-none focus:ring-2 focus:ring-primary-500/50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-lg
+           bg-surface-800 text-surface-200 font-medium text-sm
+           hover:bg-surface-700 active:bg-surface-900
+           border border-surface-700
+           transition-all duration-150
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center px-3 py-2 rounded-lg
+           text-surface-400 font-medium text-sm
+           hover:bg-surface-800 hover:text-surface-200
+           transition-all duration-150;
+  }
+
+  .input {
+    @apply w-full px-4 py-2.5 rounded-lg
+           bg-surface-900 border border-surface-700
+           text-surface-200 placeholder-surface-500
+           focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50
+           transition-all duration-150 text-sm;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .heading-1 {
+    @apply text-3xl font-bold text-white tracking-tight;
+  }
+
+  .heading-2 {
+    @apply text-xl font-semibold text-white tracking-tight;
+  }
+
+  .heading-3 {
+    @apply text-lg font-semibold text-surface-200;
+  }
+
+  .animate-in {
+    @apply animate-fade-in;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-accent-400;
+  }
+
+  .bg-grid {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .glow {
+    box-shadow: 0 0 40px rgba(99, 102, 241, 0.15);
+  }
+
+  .glow-accent {
+    box-shadow: 0 0 40px rgba(20, 184, 166, 0.15);
+  }
+
+  .workspace-bg {
+    @apply bg-[#06060a] relative overflow-hidden;
+    background-image:
+      radial-gradient(ellipse 120% 80% at 50% -30%, rgba(99, 102, 241, 0.28), transparent 52%),
+      radial-gradient(ellipse 80% 55% at 105% 15%, rgba(20, 184, 166, 0.14), transparent 48%),
+      radial-gradient(ellipse 70% 50% at -5% 70%, rgba(99, 102, 241, 0.12), transparent 42%),
+      radial-gradient(ellipse 55% 45% at 75% 95%, rgba(139, 92, 246, 0.08), transparent 38%);
+  }
+
+  .cinematic-atmosphere {
+    @apply absolute inset-0 z-[0] overflow-hidden;
+  }
+
+  .cinematic-mesh {
+    position: absolute;
+    pointer-events: none;
+    will-change: transform, opacity;
+  }
+
+  .cinematic-mesh-a {
+    inset: -45%;
+    background: conic-gradient(
+      from 200deg at 50% 50%,
+      rgba(99, 102, 241, 0.14) 0deg,
+      rgba(20, 184, 166, 0.08) 120deg,
+      rgba(139, 92, 246, 0.1) 240deg,
+      rgba(99, 102, 241, 0.14) 360deg
+    );
+    animation: meshDrift 80s linear infinite;
+    opacity: 0.55;
+  }
+
+  .cinematic-mesh-b {
+    inset: -30%;
+    background: radial-gradient(
+      ellipse 50% 50% at 50% 50%,
+      rgba(99, 102, 241, 0.12) 0%,
+      transparent 55%
+    );
+    animation: meshBreathe 12s ease-in-out infinite;
+    mix-blend-mode: screen;
+  }
+
+  @keyframes meshDrift {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes meshBreathe {
+    0%, 100% { opacity: 0.35; transform: scale(1); }
+    50% { opacity: 0.65; transform: scale(1.06); }
+  }
+
+  .cinematic-particles {
+    @apply absolute inset-0;
+  }
+
+  .cinematic-particle {
+    @apply absolute rounded-full bg-white;
+    animation: particleFloat ease-in-out infinite;
+  }
+
+  @keyframes particleFloat {
+    0%, 100% { transform: translateY(0) translateX(0); opacity: 0.2; }
+    50% { transform: translateY(-24px) translateX(8px); opacity: 0.55; }
+  }
+
+  .cinematic-blur-plate {
+    @apply absolute inset-0;
+    backdrop-filter: blur(1px);
+    background: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(99, 102, 241, 0.04), transparent 60%);
+  }
+
+  .cinematic-vignette {
+    @apply absolute inset-0;
+    background: radial-gradient(ellipse 75% 70% at 50% 45%, transparent 30%, rgba(0, 0, 0, 0.72) 100%);
+  }
+
+  .cinematic-noise {
+    @apply absolute inset-0 opacity-[0.045];
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 100px 100px;
+  }
+
+  .ambient-orb-deep {
+    width: min(280px, 40vw);
+    height: min(280px, 40vw);
+    bottom: 30%;
+    left: -8%;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
+    animation: orbFloat 32s ease-in-out 2s infinite;
+  }
+
+  .workspace-bg::before {
+    content: "";
+    @apply absolute inset-0 pointer-events-none;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse 85% 75% at 50% 35%, black 25%, transparent 72%);
+  }
+
+  .workspace-bg::after {
+    content: "";
+    @apply absolute inset-0 pointer-events-none;
+    background: radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, 0.55) 100%);
+  }
+
+  .ambient-layer {
+    @apply absolute inset-0 z-[1] overflow-hidden;
+  }
+
+  .ambient-orb {
+    @apply absolute rounded-full blur-3xl opacity-60;
+    will-change: transform;
+  }
+
+  .ambient-orb-primary {
+    width: min(520px, 70vw);
+    height: min(520px, 70vw);
+    top: -12%;
+    left: 10%;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, transparent 68%);
+    animation: orbFloat 24s ease-in-out infinite;
+  }
+
+  .ambient-orb-accent {
+    width: min(420px, 55vw);
+    height: min(420px, 55vw);
+    bottom: 5%;
+    right: -5%;
+    background: radial-gradient(circle, rgba(20, 184, 166, 0.22) 0%, transparent 70%);
+    animation: orbFloat 30s ease-in-out 3s infinite reverse;
+  }
+
+  .ambient-orb-muted {
+    width: min(360px, 45vw);
+    height: min(360px, 45vw);
+    top: 40%;
+    left: 55%;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 72%);
+    animation: orbFloat 26s ease-in-out 6s infinite;
+  }
+
+  @keyframes orbFloat {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(14px, -20px) scale(1.05); }
+    66% { transform: translate(-10px, 12px) scale(0.97); }
+  }
+
+  .noise-overlay {
+    @apply absolute inset-0 pointer-events-none z-[2];
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 128px 128px;
+  }
+
+  .page-container {
+    @apply w-full max-w-6xl mx-auto;
+  }
+
+  .cursor-glow {
+    background-image: radial-gradient(
+      600px circle at var(--cursor-x, 50%) var(--cursor-y, 0%),
+      rgba(99, 102, 241, 0.06),
+      transparent 45%
+    );
+  }
+
+  @media (pointer: fine) {
+    .cursor-glow {
+      background-attachment: fixed;
+    }
+  }
+
+  .card-premium {
+    @apply relative border-surface-800/60;
+    background: linear-gradient(
+      145deg,
+      rgba(12, 12, 20, 0.85) 0%,
+      rgba(10, 10, 16, 0.75) 100%
+    );
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.05) inset,
+      0 4px 24px rgba(0, 0, 0, 0.35),
+      0 0 0 1px rgba(255, 255, 255, 0.02);
+    transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+  }
+
+  .card-premium:hover {
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.06) inset,
+      0 12px 40px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(99, 102, 241, 0.12),
+      0 0 48px rgba(99, 102, 241, 0.06);
+  }
+
+  .landing-bg {
+    @apply bg-[#08080d] relative overflow-hidden;
+    background-image:
+      radial-gradient(ellipse 100% 65% at 50% -15%, rgba(99, 102, 241, 0.28), transparent 55%),
+      radial-gradient(ellipse 75% 55% at 95% 15%, rgba(20, 184, 166, 0.14), transparent 50%),
+      radial-gradient(ellipse 65% 45% at 5% 65%, rgba(99, 102, 241, 0.12), transparent 45%),
+      radial-gradient(ellipse 45% 35% at 50% 100%, rgba(20, 184, 166, 0.08), transparent 40%);
+  }
+
+  .landing-bg::before {
+    content: "";
+    @apply absolute inset-0 pointer-events-none;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, black 15%, transparent 75%);
+  }
+
+  .landing-bg::after {
+    content: "";
+    @apply absolute top-1/4 left-1/4 w-96 h-96 rounded-full pointer-events-none;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
+    filter: blur(60px);
+  }
+}

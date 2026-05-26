@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Node
+node_modules/
+.next/
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+*.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads
+backend/uploads/audio/*
+backend/uploads/reports/*
+!backend/uploads/.gitkeep
+
+# Database
+backend/*.db
+backend/*.db-journal
+backend/*.db-wal
+backend/*.db-shm
+
+# Docker
+.docker/
+
+# Logs
+*.log
+
+# PID files
+*.pid
