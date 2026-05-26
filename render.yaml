@@ -1,0 +1,61 @@
+services:
+  # ---- Backend: FastAPI Web Service ----
+  - type: web
+    name: second-memory-api
+    runtime: python
+    plan: free
+    autoDeploy: true
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: second-memory-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "10080"
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_BASE_URL
+        value: https://api.openai.com/v1
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: APP_NAME
+        value: Second Memory
+      - key: DEBUG
+        value: "false"
+      - key: UPLOAD_DIR
+        value: ./uploads
+      - key: MAX_UPLOAD_SIZE_MB
+        value: "50"
+      - key: PYTHON_VERSION
+        value: "3.13"
+
+  # ---- Frontend: Next.js Web Service ----
+  - type: web
+    name: second-memory-app
+    runtime: node
+    plan: free
+    autoDeploy: true
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: second-memory-api
+          property: host
+          value: /api
+      - key: NODE_VERSION
+        value: "20"
+
+databases:
+  - name: second-memory-db
+    plan: free
+    databaseName: meetmind
+    user: meetmind
