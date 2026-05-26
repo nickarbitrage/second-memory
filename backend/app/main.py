@@ -9,6 +9,7 @@ from app.database import init_db
 from app.routers import auth_router, meetings_router, chat_router, analytics_router
 from app.routers.reports import router as reports_router
 from app.routers.settings import router as settings_router
+from app.routers.seed import router as seed_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -48,6 +49,7 @@ app.include_router(chat_router)
 app.include_router(analytics_router)
 app.include_router(reports_router)
 app.include_router(settings_router)
+app.include_router(seed_router)
 
 upload_dir = Path(settings.upload_dir)
 upload_dir.mkdir(parents=True, exist_ok=True)
