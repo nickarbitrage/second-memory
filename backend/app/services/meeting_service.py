@@ -56,6 +56,7 @@ class MeetingService:
         meeting_id = meeting.id
         background_tasks.add_task(self.process_meeting, meeting_id)
 
+        meeting.tasks = []
         try:
             return MeetingResponse.model_validate(meeting)
         except Exception as e:
