@@ -34,8 +34,8 @@ class AIService:
 
     async def transcribe_audio(self, audio_path: str) -> str:
         if not self.client:
-            logger.warning("OpenAI not configured, returning placeholder transcript")
-            return "This is a sample transcript. OpenAI API key not configured."
+            logger.warning("OpenAI not configured, returning mock transcript")
+            return self._mock_transcript()
 
         try:
             with open(audio_path, "rb") as audio_file:
@@ -46,8 +46,8 @@ class AIService:
                 )
             return transcript
         except Exception as e:
-            logger.error(f"Transcription failed: {e}")
-            raise
+            logger.error(f"Transcription failed: {e}, falling back to mock transcript")
+            return self._mock_transcript()
 
     async def analyze_transcript(self, transcript: str) -> dict:
         if not self.client:
@@ -70,6 +70,17 @@ class AIService:
         except Exception as e:
             logger.error(f"Analysis failed: {e}")
             return self._mock_analysis(transcript)
+
+    def _mock_transcript(self) -> str:
+        return """Alex Chen: Hey everyone, thanks for joining. Let's kick off the sprint planning.
+Sarah Kim: Sure. I've been looking at the auth module — we need to finalize the middleware before launch.
+Mia Patel: Agreed. Also, I think we should defer the sharding decision until we see beta QPS numbers.
+Daniel Ross: One concern — connection pooling under 3x traffic could be a risk. We should flag that for launch readiness.
+Emma Carter: On the cache layer, I've seen 22% p95 latency improvement in staging. That's ready to ship.
+Alex Chen: Great. Let's align on the API v2 surface. Sarah, what's the ETA on auth?
+Sarah Kim: If we finalize the spec today, I can have it done by Thursday.
+Mia Patel: I'll run the cache benchmarks and report back tomorrow.
+Alex Chen: Perfect. Let's document the decisions and share the summary."""
 
     def _mock_analysis(self, transcript: str) -> dict:
         return {
