@@ -46,11 +46,7 @@ services:
     startCommand: cd frontend && npm start
     envVars:
       - key: NEXT_PUBLIC_API_URL
-        fromService:
-          type: web
-          name: second-memory-api
-          property: host
-          value: /api
+        value: https://second-memory-api.onrender.com/api
       - key: NODE_VERSION
         value: "20"
 
