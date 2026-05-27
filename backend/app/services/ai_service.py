@@ -1,5 +1,6 @@
 import json
 import logging
+from pathlib import Path
 from typing import Optional
 from openai import AsyncOpenAI
 from app.config import get_settings
@@ -33,10 +34,20 @@ class AIService:
         self.model = settings.openai_model
 
     async def transcribe_audio(self, audio_path: str) -> str:
-        if not self.client:
-            logger.warning("OpenAI not configured, returning mock transcript")
-            return self._mock_transcript()
+        transcript = await self._transcribe_openai(audio_path)
+        if transcript:
+            return transcript
 
+        transcript = await self._transcribe_deepgram(audio_path)
+        if transcript:
+            return transcript
+
+        logger.warning("All transcription methods failed, using mock transcript")
+        return self._mock_transcript()
+
+    async def _transcribe_openai(self, audio_path: str) -> Optional[str]:
+        if not self.client:
+            return None
         try:
             with open(audio_path, "rb") as audio_file:
                 transcript = await self.client.audio.transcriptions.create(
@@ -46,8 +57,41 @@ class AIService:
                 )
             return transcript
         except Exception as e:
-            logger.error(f"Transcription failed: {e}, falling back to mock transcript")
-            return self._mock_transcript()
+            logger.warning(f"OpenAI transcription failed: {e}")
+            return None
+
+    async def _transcribe_deepgram(self, audio_path: str) -> Optional[str]:
+        import httpx
+        dg_key = settings.deepgram_api_key
+        if not dg_key:
+            logger.warning("Deepgram API key not configured")
+            return None
+        try:
+            ext = Path(audio_path).suffix.lower()
+            mime_map = {".mp3": "audio/mpeg", ".wav": "audio/wav", ".mp4": "audio/mp4",
+                        ".m4a": "audio/mp4", ".ogg": "audio/ogg", ".webm": "audio/webm"}
+            mime = mime_map.get(ext, "audio/mpeg")
+            with open(audio_path, "rb") as f:
+                audio_data = f.read()
+            async with httpx.AsyncClient(timeout=120) as client:
+                resp = await client.post(
+                    "https://api.deepgram.com/v1/listen?model=nova-2&language=en&punctuate=true",
+                    headers={
+                        "Authorization": f"Token {dg_key}",
+                        "Content-Type": mime,
+                    },
+                    content=audio_data,
+                )
+                if resp.status_code != 200:
+                    logger.warning(f"Deepgram returned {resp.status_code}: {resp.text[:200]}")
+                    return None
+                result = resp.json()
+                transcript = result.get("results", {}).get("channels", [{}])[0] \
+                    .get("alternatives", [{}])[0].get("transcript", "")
+                return transcript if transcript.strip() else None
+        except Exception as e:
+            logger.warning(f"Deepgram transcription failed: {e}")
+            return None
 
     async def analyze_transcript(self, transcript: str) -> dict:
         if not self.client:

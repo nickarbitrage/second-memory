@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     openai_base_url: str = "https://api.openai.com/v1"
     openai_model: str = "gpt-4o-mini"
 
+    # Deepgram
+    deepgram_api_key: str = ""
+
     class Config:
         env_file = ".env"
         case_sensitive = False
