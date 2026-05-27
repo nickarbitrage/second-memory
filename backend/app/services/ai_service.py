@@ -27,7 +27,7 @@ Return a JSON object with these fields:
 class AIService:
     def __init__(self):
         self.client = (
-            AsyncOpenAI(api_key=settings.openai_api_key, base_url=settings.openai_base_url)
+            AsyncOpenAI(api_key=settings.openai_api_key, base_url=settings.openai_base_url, timeout=10)
             if settings.openai_api_key
             else None
         )

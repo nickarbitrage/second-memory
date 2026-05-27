@@ -20,9 +20,33 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     logger.info("Starting Second Memory backend...")
     await init_db()
+    await _cleanup_stale_meetings()
     logger.info("Database initialized")
     yield
     logger.info("Shutting down...")
+
+
+async def _cleanup_stale_meetings():
+    from app.database import async_session
+    from app.models.meeting import Meeting
+    from sqlalchemy import select, or_
+    try:
+        async with async_session() as db:
+            result = await db.execute(
+                select(Meeting).where(
+                    Meeting.is_processed == False,
+                    Meeting.transcript.is_(None),
+                ).limit(10)
+            )
+            stale = result.scalars().all()
+            for m in stale:
+                m.is_processed = True
+                logger.info(f"Cleaned up stale meeting {m.id}")
+            await db.commit()
+            if stale:
+                logger.info(f"Cleaned {len(stale)} stale unprocessed meetings")
+    except Exception as e:
+        logger.warning(f"Cleanup skipped: {e}")
 
 
 app = FastAPI(
